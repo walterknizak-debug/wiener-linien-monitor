@@ -1,0 +1,332 @@
+# ============================================
+# Home Assistant Konfiguration
+# Wiener Linien Abfahrtsmonitor
+# ============================================
+
+# ----------------------------------------
+# Option 1: Panel iFrame (Eigener Menüpunkt)
+# ----------------------------------------
+# In configuration.yaml einfügen:
+
+panel_iframe:
+  wiener_linien:
+    title: "Wiener Linien"
+    icon: mdi:tram
+    url: "http://localhost:8000"
+    require_admin: false
+
+# Nach dem Neustart erscheint "Wiener Linien" in der Seitenleiste!
+
+# ----------------------------------------
+# Option 2: Dashboard Webpage Card
+# ----------------------------------------
+# Im Dashboard (Lovelace) als Karte hinzufügen:
+
+type: iframe
+url: http://localhost:8000
+aspect_ratio: 56%
+
+# ----------------------------------------
+# Option 3: REST Sensoren (Fortgeschritten)
+# ----------------------------------------
+# In configuration.yaml einfügen:
+
+rest:
+  - resource: http://localhost:8000/api/departures?stopIds=272,377
+    scan_interval: 30
+    sensor:
+      - name: "Wiener Linien Blindengasse Raw"
+        value_template: "{{ value_json.message.serverTime }}"
+        json_attributes:
+          - data
+
+  - resource: http://localhost:8000/api/departures?stopIds=249,273,365,458,4607,4622,5661,5667
+    scan_interval: 30
+    sensor:
+      - name: "Wiener Linien Josefstaedter Raw"
+        value_template: "{{ value_json.message.serverTime }}"
+        json_attributes:
+          - data
+
+# Template Sensoren für einzelne Linien
+template:
+  - sensor:
+      # Linie 5 - Blindengasse
+      - name: "Linie 5 Blindengasse"
+        unique_id: linie_5_blindengasse
+        state: >
+          {% set ns = namespace(countdown=999) %}
+          {% set data = state_attr('sensor.wiener_linien_blindengasse_raw', 'data') %}
+          {% if data and data.monitors %}
+            {% for monitor in data.monitors %}
+              {% if monitor.lines %}
+                {% for line in monitor.lines %}
+                  {% if line.name == '5' and line.departures and line.departures.departure %}
+                    {% set countdown = line.departures.departure[0].departureTime.countdown %}
+                    {% if countdown < ns.countdown %}
+                      {% set ns.countdown = countdown %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.countdown if ns.countdown != 999 else 'unavailable' }}
+        unit_of_measurement: "min"
+        icon: mdi:tram
+        attributes:
+          destination: >
+            {% set data = state_attr('sensor.wiener_linien_blindengasse_raw', 'data') %}
+            {% if data and data.monitors %}
+              {% for monitor in data.monitors %}
+                {% if monitor.lines %}
+                  {% for line in monitor.lines %}
+                    {% if line.name == '5' %}
+                      {{ line.towards }}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+      # Linie 2 - Blindengasse
+      - name: "Linie 2 Blindengasse"
+        unique_id: linie_2_blindengasse
+        state: >
+          {% set ns = namespace(countdown=999) %}
+          {% set data = state_attr('sensor.wiener_linien_blindengasse_raw', 'data') %}
+          {% if data and data.monitors %}
+            {% for monitor in data.monitors %}
+              {% if monitor.lines %}
+                {% for line in monitor.lines %}
+                  {% if line.name == '2' and line.departures and line.departures.departure %}
+                    {% set countdown = line.departures.departure[0].departureTime.countdown %}
+                    {% if countdown < ns.countdown %}
+                      {% set ns.countdown = countdown %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.countdown if ns.countdown != 999 else 'unavailable' }}
+        unit_of_measurement: "min"
+        icon: mdi:tram
+        attributes:
+          destination: >
+            {% set data = state_attr('sensor.wiener_linien_blindengasse_raw', 'data') %}
+            {% if data and data.monitors %}
+              {% for monitor in data.monitors %}
+                {% if monitor.lines %}
+                  {% for line in monitor.lines %}
+                    {% if line.name == '2' %}
+                      {{ line.towards }}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+      # Linie 12 - Blindengasse
+      - name: "Linie 12 Blindengasse"
+        unique_id: linie_12_blindengasse
+        state: >
+          {% set ns = namespace(countdown=999) %}
+          {% set data = state_attr('sensor.wiener_linien_blindengasse_raw', 'data') %}
+          {% if data and data.monitors %}
+            {% for monitor in data.monitors %}
+              {% if monitor.lines %}
+                {% for line in monitor.lines %}
+                  {% if line.name == '12' and line.departures and line.departures.departure %}
+                    {% set countdown = line.departures.departure[0].departureTime.countdown %}
+                    {% if countdown < ns.countdown %}
+                      {% set ns.countdown = countdown %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.countdown if ns.countdown != 999 else 'unavailable' }}
+        unit_of_measurement: "min"
+        icon: mdi:tram
+        attributes:
+          destination: >
+            {% set data = state_attr('sensor.wiener_linien_blindengasse_raw', 'data') %}
+            {% if data and data.monitors %}
+              {% for monitor in data.monitors %}
+                {% if monitor.lines %}
+                  {% for line in monitor.lines %}
+                    {% if line.name == '12' %}
+                      {{ line.towards }}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+      # U6 - Josefstädter Straße
+      - name: "U6 Josefstaedter Strasse"
+        unique_id: u6_josefstaedter
+        state: >
+          {% set ns = namespace(countdown=999) %}
+          {% set data = state_attr('sensor.wiener_linien_josefstaedter_raw', 'data') %}
+          {% if data and data.monitors %}
+            {% for monitor in data.monitors %}
+              {% if monitor.lines %}
+                {% for line in monitor.lines %}
+                  {% if line.name == 'U6' and line.departures and line.departures.departure %}
+                    {% set countdown = line.departures.departure[0].departureTime.countdown %}
+                    {% if countdown < ns.countdown %}
+                      {% set ns.countdown = countdown %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.countdown if ns.countdown != 999 else 'unavailable' }}
+        unit_of_measurement: "min"
+        icon: mdi:subway
+        attributes:
+          destination: >
+            {% set data = state_attr('sensor.wiener_linien_josefstaedter_raw', 'data') %}
+            {% if data and data.monitors %}
+              {% for monitor in data.monitors %}
+                {% if monitor.lines %}
+                  {% for line in monitor.lines %}
+                    {% if line.name == 'U6' %}
+                      {{ line.towards }}
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+
+# ----------------------------------------
+# Dashboard Karte für Sensoren
+# ----------------------------------------
+# Im Dashboard als Karte hinzufügen:
+
+type: entities
+title: 🚊 Wiener Linien Abfahrten
+show_header_toggle: false
+entities:
+  - entity: sensor.linie_5_blindengasse
+    name: Linie 5
+    secondary_info: last-changed
+    icon: mdi:tram
+  - entity: sensor.linie_2_blindengasse
+    name: Linie 2
+    secondary_info: last-changed
+    icon: mdi:tram
+  - entity: sensor.linie_12_blindengasse
+    name: Linie 12
+    secondary_info: last-changed
+    icon: mdi:tram
+  - entity: sensor.u6_josefstaedter_strasse
+    name: U6
+    secondary_info: last-changed
+    icon: mdi:subway
+
+# ----------------------------------------
+# Glance Card (Kompakte Ansicht)
+# ----------------------------------------
+
+type: glance
+title: 🚊 Nächste Abfahrten
+show_name: true
+show_state: true
+columns: 4
+entities:
+  - entity: sensor.linie_5_blindengasse
+    name: "5"
+    icon: mdi:tram
+  - entity: sensor.linie_2_blindengasse
+    name: "2"
+    icon: mdi:tram
+  - entity: sensor.linie_12_blindengasse
+    name: "12"
+    icon: mdi:tram
+  - entity: sensor.u6_josefstaedter_strasse
+    name: U6
+    icon: mdi:subway
+
+# ----------------------------------------
+# Markdown Card mit Details
+# ----------------------------------------
+
+type: markdown
+title: 🚊 Wiener Linien
+content: |
+  **Blindengasse:**
+  - Linie 5: {{ states('sensor.linie_5_blindengasse') }} min → {{ state_attr('sensor.linie_5_blindengasse', 'destination') }}
+  - Linie 2: {{ states('sensor.linie_2_blindengasse') }} min → {{ state_attr('sensor.linie_2_blindengasse', 'destination') }}
+  - Linie 12: {{ states('sensor.linie_12_blindengasse') }} min → {{ state_attr('sensor.linie_12_blindengasse', 'destination') }}
+  
+  **Josefstädter Straße:**
+  - U6: {{ states('sensor.u6_josefstaedter_strasse') }} min → {{ state_attr('sensor.u6_josefstaedter_strasse', 'destination') }}
+
+# ----------------------------------------
+# Automationen (Beispiele)
+# ----------------------------------------
+
+automation:
+  # Benachrichtigung bei langer Wartezeit
+  - alias: "Warnung: Lange Wartezeit Linie 5"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.linie_5_blindengasse
+        above: 15
+    condition:
+      - condition: time
+        after: "07:00:00"
+        before: "09:00:00"
+        weekday:
+          - mon
+          - tue
+          - wed
+          - thu
+          - fri
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "⚠️ Verspätung Linie 5"
+          message: "Linie 5 kommt erst in {{ states('sensor.linie_5_blindengasse') }} Minuten"
+
+  # Erinnerung zum Losgehen
+  - alias: "Erinnerung: Linie 5 kommt bald"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.linie_5_blindengasse
+        below: 5
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "🚊 Zeit zu gehen!"
+          message: "Linie 5 kommt in {{ states('sensor.linie_5_blindengasse') }} Minuten"
+
+# ----------------------------------------
+# Script für manuelle Aktualisierung
+# ----------------------------------------
+
+script:
+  refresh_wiener_linien:
+    alias: "Wiener Linien aktualisieren"
+    sequence:
+      - service: homeassistant.update_entity
+        target:
+          entity_id:
+            - sensor.wiener_linien_blindengasse_raw
+            - sensor.wiener_linien_josefstaedter_raw
+
+# ----------------------------------------
+# Button Card für manuelle Aktualisierung
+# ----------------------------------------
+
+type: button
+name: Aktualisieren
+icon: mdi:refresh
+tap_action:
+  action: call-service
+  service: script.refresh_wiener_linien
