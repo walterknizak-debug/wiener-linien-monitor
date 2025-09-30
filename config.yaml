@@ -1,0 +1,51 @@
+name: "Wiener Linien Monitor"
+version: "1.0.0"
+slug: wiener_linien_monitor
+description: "Abfahrtsmonitor für Wiener Linien mit Echtzeitdaten"
+url: "https://github.com/yourusername/wiener-linien-monitor"
+arch:
+  - armhf
+  - armv7
+  - aarch64
+  - amd64
+  - i386
+init: false
+ports:
+  8000/tcp: 8000
+ports_description:
+  8000/tcp: "Web Interface"
+webui: "http://[HOST]:[PORT:8000]"
+startup: application
+boot: auto
+options:
+  stations:
+    blindengasse:
+      - 272
+      - 377
+    josefstaedter_strasse:
+      - 249
+      - 273
+      - 365
+      - 458
+      - 4607
+      - 4622
+      - 5661
+      - 5667
+  lines:
+    - "2"
+    - "5"
+    - "12"
+    - "U6"
+  refresh_interval: 30
+  theme: "default"
+schema:
+  stations:
+    blindengasse:
+      - int
+    josefstaedter_strasse:
+      - int
+  lines:
+    - str
+  refresh_interval: int(10,300)
+  theme: list(default|homeassistant)
+image: "ghcr.io/yourusername/wiener-linien-monitor-{arch}"
